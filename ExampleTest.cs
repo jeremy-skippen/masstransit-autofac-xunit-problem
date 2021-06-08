@@ -295,8 +295,8 @@ namespace Example
         }
 
         /// <summary>
-        /// This test does not work as expected.
-        /// The call to <c>testHarness.Bus.Publish()</c> doesn't trigger the consumer as expected.
+        /// This test mostly works as expected, however the test harnesses for the SagaStateMachine and Consumer
+        /// don't capture any messages, even though the saga and consumer execute as expected.
         /// </summary>
         [Fact]
         public async Task ExampleTest2_AutofacOnly()
@@ -359,7 +359,6 @@ namespace Example
                 Assert.True(await testHarness.Published.Any<ExampleEvent2>(m => m.Context.CorrelationId == correlationId));
                 Assert.True(await testHarness.Consumed.Any<ExampleEvent2>(m => m.Context.CorrelationId == correlationId));
                 // FAILS: Assert.True(await sagaHarness.Consumed.Any<ExampleEvent2>(m => m.Context.CorrelationId == correlationId));
-                ;
             }
             finally
             {
@@ -368,8 +367,7 @@ namespace Example
         }
 
         /// <summary>
-        /// This test does not work as expected.
-        /// The call to <c>testHarness.Bus.Publish()</c> doesn't trigger the consumer as expected.
+        /// This test works as expected.
         /// </summary>
         [Fact]
         public async Task ExampleTest2_AutofacAndServiceProvider()
