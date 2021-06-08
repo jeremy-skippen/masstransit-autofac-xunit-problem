@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 
 using Autofac;
@@ -310,6 +310,7 @@ namespace Example
                     .InMemoryRepository();
 
                 cfg.AddConsumer<ExampleConsumer>();
+                cfg.AddConsumer<ExampleConsumer2>();
             });
 
             var container = builder.Build();
@@ -327,6 +328,7 @@ namespace Example
                 var sagaRepo = container.Resolve<ISagaRepository<ExampleState>>();
                 var sagaHarness = testHarness.StateMachineSaga(saga, sagaRepo);
                 var consumerHarness = testHarness.Consumer(() => container.Resolve<ExampleConsumer>());
+                var consumer2Harness = testHarness.Consumer(() => container.Resolve<ExampleConsumer2>());
 
                 var correlationId = Guid.NewGuid();
 
@@ -340,7 +342,7 @@ namespace Example
                 // 1. Check that ExampleMessage2 has been received
                 Assert.True(await testHarness.Published.Any<ExampleMessage2>(m => m.Context.CorrelationId == correlationId));
                 Assert.True(await testHarness.Consumed.Any<ExampleMessage2>(m => m.Context.CorrelationId == correlationId));
-                Assert.True(await consumerHarness.Consumed.Any<ExampleMessage2>(m => m.Context.CorrelationId == correlationId));
+                Assert.True(await consumer2Harness.Consumed.Any<ExampleMessage2>(m => m.Context.CorrelationId == correlationId));
 
                 // 2. Check that ExampleEvent has been published recieved
                 Assert.True(await testHarness.Published.Any<ExampleEvent>(m => m.Context.CorrelationId == correlationId));
@@ -384,6 +386,8 @@ namespace Example
 
                     cfg.AddConsumer<ExampleConsumer>();
                     cfg.AddConsumerTestHarness<ExampleConsumer>();
+                    cfg.AddConsumer<ExampleConsumer2>();
+                    cfg.AddConsumerTestHarness<ExampleConsumer2>();
                 });
             builder.Populate(collection);
 
@@ -398,6 +402,7 @@ namespace Example
 
                 var sagaHarness = provider.GetRequiredService<IStateMachineSagaTestHarness<ExampleState, ExampleStateMachine>>();
                 var consumerHarness = provider.GetRequiredService<IConsumerTestHarness<ExampleConsumer>>();
+                var consumer2Harness = provider.GetRequiredService<IConsumerTestHarness<ExampleConsumer>>();
 
                 var correlationId = Guid.NewGuid();
 
@@ -411,7 +416,7 @@ namespace Example
                 // 1. Check that ExampleMessage2 has been received
                 Assert.True(await testHarness.Published.Any<ExampleMessage2>(m => m.Context.CorrelationId == correlationId));
                 Assert.True(await testHarness.Consumed.Any<ExampleMessage2>(m => m.Context.CorrelationId == correlationId));
-                Assert.True(await consumerHarness.Consumed.Any<ExampleMessage2>(m => m.Context.CorrelationId == correlationId));
+                Assert.True(await consumer2Harness.Consumed.Any<ExampleMessage2>(m => m.Context.CorrelationId == correlationId));
 
                 // 2. Check that ExampleEvent has been published recieved
                 Assert.True(await testHarness.Published.Any<ExampleEvent>(m => m.Context.CorrelationId == correlationId));
